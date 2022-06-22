@@ -47,3 +47,7 @@ export const txConfig = {
   smsSdkAppid: process.env.TENCENT_MESSAGE_SmsSdkAppid,
   signName: process.env.TENCENT_MESSAGE_SignName,
 }
+
+export const extraConfig = {
+  defaultTask: process.env.TASK_DEFAULT_TASK,
+}

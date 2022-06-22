@@ -8,6 +8,7 @@ import {
 
 import { getUserInfo } from '@/utils/userUtil'
 import { taskError } from '@/constants/errorMsg'
+import { extraConfig } from '@/config'
 
 const router = new Router('task')
 
@@ -144,7 +145,7 @@ router.delete('/:key', async (req, res) => {
 /**
  * 更新任务分类与名称
  */
- router.put('/:key', async (req, res) => {
+router.put('/:key', async (req, res) => {
   const { name, category } = req.body
   const { id, account: logAccount } = await getUserInfo(req)
   const { key } = req.params
@@ -179,31 +180,34 @@ router.delete('/:key', async (req, res) => {
  * 获取默认的提交任务
  */
 router.get('/defaultTask', async (req, res) => {
-  // const { name, category } = req.body
-  // const { id, account: logAccount } = await getUserInfo(req)
-  // const { key } = req.params
-  // const query: Task = { userId: id, k: key }
-  // const task: Task = {}
-  // if (name) {
-  //   task.name = name
-  // }
-  // if (category !== undefined) {
-  //   task.categoryKey = category
-  // }
-  // const [originTask] = await selectTasks(query)
-  // if (originTask) {
-  //   await updateTask(task, query)
-  // }
-  // addBehavior(req, {
-  //   module: 'task',
-  //   msg: `更新任务分类/名称 用户:${logAccount} 原:${originTask.name} 新:${task.name}`,
-  //   data: {
-  //     account: logAccount,
-  //     oldName: originTask.name,
-  //     newName: task.name,
-  //   },
-  // })
-  res.success()
+  const key = extraConfig.defaultTask;
+  const [task] = await selectTasks({
+    k: key,
+  })
+  if (!task) {
+    addBehavior(req, {
+      module: 'task',
+      msg: '获取任务详细信息, 任务不存在',
+      data: {
+        key,
+      },
+    })
+    res.failWithError(taskError.noExist)
+    return
+  }
+
+  addBehavior(req, {
+    module: 'task',
+    msg: `获取任务详细信息, ${task.name}`,
+    data: {
+      name: task.name,
+    },
+  })
+  res.success({
+    name: task.name,
+    category: task.category_key,
+    key
+  })
 })
 
 
