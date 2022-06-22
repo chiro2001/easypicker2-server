@@ -181,33 +181,38 @@ router.put('/:key', async (req, res) => {
  */
 router.get('/defaultTask', async (req, res) => {
   const key = extraConfig.defaultTask;
-  const [task] = await selectTasks({
-    k: key,
-  })
-  if (!task) {
-    addBehavior(req, {
-      module: 'task',
-      msg: '获取任务详细信息, 任务不存在',
-      data: {
-        key,
-      },
-    })
-    res.failWithError(taskError.noExist)
-    return
-  }
-
-  addBehavior(req, {
-    module: 'task',
-    msg: `获取任务详细信息, ${task.name}`,
-    data: {
-      name: task.name,
-    },
-  })
+  console.log(`get key: ${key}`);
   res.success({
-    name: task.name,
-    category: task.category_key,
     key
   })
+
+  // const [task] = await selectTasks({
+  //   k: key,
+  // })
+  // if (!task) {
+  //   addBehavior(req, {
+  //     module: 'task',
+  //     msg: '获取任务详细信息, 任务不存在',
+  //     data: {
+  //       key,
+  //     },
+  //   })
+  //   res.failWithError(taskError.noExist)
+  //   return
+  // }
+
+  // addBehavior(req, {
+  //   module: 'task',
+  //   msg: `获取任务详细信息, ${task.name}`,
+  //   data: {
+  //     name: task.name,
+  //   },
+  // })
+  // res.success({
+  //   name: task.name,
+  //   category: task.category_key,
+  //   key
+  // })
 })
 
 
