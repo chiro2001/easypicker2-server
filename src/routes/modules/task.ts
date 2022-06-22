@@ -144,7 +144,7 @@ router.delete('/:key', async (req, res) => {
 /**
  * 更新任务分类与名称
  */
-router.put('/:key', async (req, res) => {
+ router.put('/:key', async (req, res) => {
   const { name, category } = req.body
   const { id, account: logAccount } = await getUserInfo(req)
   const { key } = req.params
@@ -173,4 +173,38 @@ router.put('/:key', async (req, res) => {
 }, {
   needLogin: true,
 })
+
+
+/**
+ * 获取默认的提交任务
+ */
+router.get('/defaultTask', async (req, res) => {
+  // const { name, category } = req.body
+  // const { id, account: logAccount } = await getUserInfo(req)
+  // const { key } = req.params
+  // const query: Task = { userId: id, k: key }
+  // const task: Task = {}
+  // if (name) {
+  //   task.name = name
+  // }
+  // if (category !== undefined) {
+  //   task.categoryKey = category
+  // }
+  // const [originTask] = await selectTasks(query)
+  // if (originTask) {
+  //   await updateTask(task, query)
+  // }
+  // addBehavior(req, {
+  //   module: 'task',
+  //   msg: `更新任务分类/名称 用户:${logAccount} 原:${originTask.name} 新:${task.name}`,
+  //   data: {
+  //     account: logAccount,
+  //     oldName: originTask.name,
+  //     newName: task.name,
+  //   },
+  // })
+  res.success()
+})
+
+
 export default router
