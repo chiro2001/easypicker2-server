@@ -230,6 +230,7 @@ router.get('power/super', async (req, res) => {
 })
 
 router.get('login', async (req, res) => {
+  console.log("call login");
   const user = await getUserInfo(req)
   res.success(!!user)
 })
