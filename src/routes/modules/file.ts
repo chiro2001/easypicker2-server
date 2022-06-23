@@ -12,7 +12,7 @@ import {
   batchDeleteFiles, batchFileStatus, checkFopTaskStatus, createDownloadUrl,
   deleteObjByKey, getUploadToken, judgeFileIsExist, makeZipWithKeys,
 } from '@/utils/qiniuUtil'
-import { getUniqueKey, isSameInfo, normalizeFileName } from '@/utils/stringUtil'
+import { getUniqueKey, InfoItem, isSameInfo, normalizeFileName } from '@/utils/stringUtil'
 import { getUserInfo } from '@/utils/userUtil'
 import { selectTaskInfo } from '@/db/taskInfoDb'
 
@@ -547,6 +547,67 @@ router.post('submit/people', async (req, res) => {
           taskKey,
           taskName: task.name,
           info,
+        },
+      })
+    }
+  })()
+
+  res.success({
+    isSubmit: files.length > 0,
+    txt: '',
+  })
+})
+
+/**
+ * 查询是否提交
+ */
+router.post('submit/student/:sid', async (req, res) => {
+  const { taskKey, name = '' } = req.body
+  const sid = parseInt(req.params.sid);
+
+  let files = await selectFiles({
+    taskKey,
+    people: name,
+  }, ['id', 'info'])
+  files = files.filter((v) => {
+    const userItems: InfoItem[] = JSON.parse(v.info);
+    if (userItems.length == 0) return false;
+    let hasSid = false;
+    let fileSid = -1;
+    for (const userItem of userItems) {
+      if (userItem.text == '学号') {
+        hasSid = true;
+        fileSid = parseInt(userItem.value);
+        break;
+      }
+    }
+    if (!hasSid) return false;
+    return sid == fileSid;
+  });
+  // files = files.filter((v) => isSameInfo(v.info, JSON.stringify(info)));
+  (async () => {
+    const [task] = await selectTasks({
+      k: taskKey,
+    })
+    if (task) {
+      addBehavior(req, {
+        module: 'file',
+        msg: `查询学生是否提交过文件: ${files.length > 0 ? '是' : '否'} 任务:${task.name} 数量:${files.length}`,
+        data: {
+          taskKey,
+          taskName: task.name,
+          sid,
+          count: files.length,
+        },
+      })
+    } else {
+      addBehavior(req, {
+        module: 'file',
+        msg: `查询学生是否提交过文件: 任务 ${taskKey} 不存在`,
+        data: {
+          taskKey,
+          taskName: task.name,
+          sid,
         },
       })
     }

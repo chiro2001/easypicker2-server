@@ -51,7 +51,8 @@ export function formatSize(size:number, pointLength?:number, units?:string[]) {
 }
 
 type InfoItemType = 'input' | 'radio' | 'text' | 'select'
-interface InfoItem {
+
+export interface InfoItem {
     type?: InfoItemType,
     // 描述信息
     text?: string,
