@@ -13,6 +13,17 @@ import { extraConfig } from '@/config'
 const router = new Router('task')
 
 /**
+ * 获取默认的提交任务
+ */
+router.get('defaultTask', async (req, res) => {
+  const key = extraConfig.defaultTask;
+  console.log(`get default key: ${key}`);
+  res.success({
+    key
+  })
+})
+
+/**
  * 创建任务
  */
 router.post('create', async (req, res) => {
@@ -173,46 +184,6 @@ router.put('/:key', async (req, res) => {
   res.success()
 }, {
   needLogin: true,
-})
-
-
-/**
- * 获取默认的提交任务
- */
-router.get('/defaultTask', async (req, res) => {
-  const key = extraConfig.defaultTask;
-  console.log(`get key: ${key}`);
-  res.success({
-    key
-  })
-
-  // const [task] = await selectTasks({
-  //   k: key,
-  // })
-  // if (!task) {
-  //   addBehavior(req, {
-  //     module: 'task',
-  //     msg: '获取任务详细信息, 任务不存在',
-  //     data: {
-  //       key,
-  //     },
-  //   })
-  //   res.failWithError(taskError.noExist)
-  //   return
-  // }
-
-  // addBehavior(req, {
-  //   module: 'task',
-  //   msg: `获取任务详细信息, ${task.name}`,
-  //   data: {
-  //     name: task.name,
-  //   },
-  // })
-  // res.success({
-  //   name: task.name,
-  //   category: task.category_key,
-  //   key
-  // })
 })
 
 
