@@ -691,6 +691,7 @@ router.get('oneStudent/:sid', async (req, res) => {
   res.success({
     link: createDownloadUrl(k),
     mimeType,
+    info: file.info
   })
 })
 
