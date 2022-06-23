@@ -237,7 +237,7 @@ router.get('login', async (req, res) => {
 })
 
 router.get('canRegister', async (req, res) => {
-  res.success({ canRegister: extraConfig.canRegister });
+  res.success(extraConfig.canRegister);
 });
 
 export default router
