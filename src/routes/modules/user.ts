@@ -12,6 +12,7 @@ import { rPassword } from '@/utils/regExp'
 import { encryption, formatDate, getUniqueKey } from '@/utils/stringUtil'
 import tokenUtil from '@/utils/tokenUtil'
 import { getUserInfo } from '@/utils/userUtil'
+import { extraConfig } from '@/config'
 
 const router = new Router('user')
 
@@ -234,4 +235,9 @@ router.get('login', async (req, res) => {
   const user = await getUserInfo(req)
   res.success(!!user)
 })
+
+router.get('canRegister', async (req, res) => {
+  res.success({ canRegister: extraConfig.canRegister });
+});
+
 export default router

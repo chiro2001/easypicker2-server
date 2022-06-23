@@ -13,6 +13,7 @@ import {
 import { rAccount, rMobilePhone, rPassword } from '@/utils/regExp'
 import { encryption, formatDate } from '@/utils/stringUtil'
 import tokenUtil from '@/utils/tokenUtil'
+import { extraConfig } from '@/config'
 
 const power = {
   needLogin: true,
@@ -25,6 +26,17 @@ export default class UserController {
     const {
       account, pwd, bindPhone, phone, code,
     } = body
+
+    if (!extraConfig.canRegister) {
+      addBehavior(req, {
+        module: 'user',
+        msg: `新用户禁止注册 账号:${account}`,
+        data: {
+          account,
+        },
+      })
+      return Response.failWithError(UserError.account.ban)
+    }
 
     if (!rAccount.test(account)) {
       addBehavior(req, {

@@ -50,4 +50,5 @@ export const txConfig = {
 
 export const extraConfig = {
   defaultTask: process.env.TASK_DEFAULT_TASK,
+  canRegister: process.env.CAN_REGISTER === 'true',
 }
