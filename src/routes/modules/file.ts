@@ -15,6 +15,7 @@ import {
 import { getUniqueKey, InfoItem, isSameInfo, normalizeFileName } from '@/utils/stringUtil'
 import { getUserInfo } from '@/utils/userUtil'
 import { selectTaskInfo } from '@/db/taskInfoDb'
+import { extraConfig } from '@/config'
 
 const router = new Router('file')
 
@@ -558,17 +559,12 @@ router.post('submit/people', async (req, res) => {
   })
 })
 
-/**
- * 查询是否提交
- */
-router.post('submit/student/:sid', async (req, res) => {
-  const { taskKey, name = '' } = req.body
-  const sid = parseInt(req.params.sid);
 
+async function fileFilterBySid(taskKey: string, sid: number, name = '', selectKeys = ['id', 'info']) {
   let files = await selectFiles({
     taskKey,
     people: name,
-  }, ['id', 'info'])
+  }, selectKeys || [])
   files = files.filter((v) => {
     const userItems: InfoItem[] = JSON.parse(v.info);
     if (userItems.length == 0) return false;
@@ -584,7 +580,17 @@ router.post('submit/student/:sid', async (req, res) => {
     if (!hasSid) return false;
     return sid == fileSid;
   });
-  // files = files.filter((v) => isSameInfo(v.info, JSON.stringify(info)));
+  return files;
+}
+
+/**
+ * 查询是否提交
+ */
+router.post('submit/student/:sid', async (req, res) => {
+  const { taskKey, name = '' } = req.body
+  const sid = parseInt(req.params.sid);
+
+  let files = await fileFilterBySid(taskKey, sid, name);
   (async () => {
     const [task] = await selectTasks({
       k: taskKey,
@@ -618,4 +624,75 @@ router.post('submit/student/:sid', async (req, res) => {
     txt: '',
   })
 })
+
+/**
+ * 下载单个文件
+ */
+router.get('oneStudent/:sid', async (req, res) => {
+  const sid = parseInt(req.params.sid)
+  const { taskKeyRaw = null, name = '' } = req.query
+  const taskKey = taskKeyRaw || extraConfig.defaultTask;
+  const files = await fileFilterBySid(taskKey, sid, name, null);
+  console.log(files);
+  
+  if (files.length == 0) {
+    addBehavior(req, {
+      module: 'file',
+      msg: `下载文件失败, sid: ${sid} 文件记录不存在`,
+      data: {
+        sid,
+        taskKey
+      },
+    })
+    res.failWithError(publicError.file.notExist)
+    return
+  }
+  const filesSorted = files.sort((a, b) => b.date.getTime() - a.date.getTime());
+  // use latest file
+  const file: File = filesSorted[0];
+  let k = `easypicker2/${file.task_key}/${file.hash}/${file.name}`
+  let isExist = false
+  // 兼容旧路径的逻辑
+  if (file.category_key) {
+    isExist = await judgeFileIsExist(file.category_key)
+  }
+
+  if (!isExist) {
+    isExist = await judgeFileIsExist(k)
+  } else {
+    k = file.category_key
+  }
+
+  if (!isExist) {
+    addBehavior(req, {
+      module: 'file',
+      msg: `下载文件失败 sid:${sid} task:${taskKey} 文件:${file.name} 已从云上移除`,
+      data: {
+        taskKey,
+        name: file.name,
+        sid,
+      },
+    })
+    res.failWithError(publicError.file.notExist)
+    return
+  }
+
+  const status = await batchFileStatus([k])
+  const mimeType = status[0]?.data?.mimeType
+  addBehavior(req, {
+    module: 'file',
+    msg: `下载文件成功 sid:${sid} 文件:${file.name} 类型:${mimeType}`,
+    data: {
+      sid,
+      name: file.name,
+      mimeType,
+    },
+  })
+  res.success({
+    link: createDownloadUrl(k),
+    mimeType,
+  })
+})
+
+
 export default router
